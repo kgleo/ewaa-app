@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>EWA – Earned Wage Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* ============================================================
+           DESIGN TOKENS – Green, Flat, App-like
+           ============================================================ */
+        :root {
+            --color-green: #0A3D2E;
+            --color-green-light: #E8F5ED;
+            --color-green-mid: #2E7D5E;
+            --color-green-dim: #6B9A84;
+            --color-green-bg: #F0F5F2;
+            --color-surface: #FFFFFF;
+            --color-bg: #F5F7F6;
+            --color-border: #E8ECEA;
+            --color-text-primary: #1A1A1A;
+            --color-text-secondary: #5A5A5A;
+            --color-text-muted: #9A9A9A;
+            --color-text-inverse: #FFFFFF;
+            --color-status-success: #2E7D5E;
+            --color-status-warning: #D4A02B;
+            --color-status-danger: #C94A4A;
+            --color-status-info: #3B82F6;
+            --color-status-bg-success: #E8F5ED;
+            --color-status-bg-warning: #FDF6E8;
+            --color-status-bg-danger: #FDE8E8;
+            --color-status-bg-info: #E8F0FD;
+
+            --sp-xs: 4px;
+            --sp-sm: 8px;
+            --sp-md: 16px;
+            --sp-lg: 24px;
+            --sp-xl: 32px;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-pill: 999px;
+            --font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            --font-size-xl: 24px;
+            --font-size-lg: 18px;
+            --font-size-md: 16px;
+            --font-size-sm: 14px;
+            --font-size-xs: 12px;
+            --font-size-tiny: 10px;
+            --btn-height: 50px;
+            --input-height: 48px;
+            --tab-height: 56px;
+            --header-height: 52px;
+            --frame-width: 390px;
+            --frame-radius: 36px;
+        }
+
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: var(--font-family);
+            background: #E8ECEA;
+            color: var(--color-text-primary);
+            font-weight: 400;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Frame (Desktop) ── */
+        .phone-frame {
+            width: 100%;
+            max-width: var(--frame-width);
+            height: 100vh;
+            max-height: 780px;
+            background: var(--color-surface);
+            border-radius: 0;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.04), 0 20px 60px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+
+        @media (min-width: 481px) {
+            .phone-frame {
+                border-radius: var(--frame-radius);
+                height: 90vh;
+                max-height: 780px;
+                box-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 24px 64px rgba(0,0,0,0.10);
+            }
+            body {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .phone-frame {
+                max-width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            body {
+                padding: 0;
+                background: var(--color-surface);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            background: var(--color-surface);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Status Bar ── */
+        .status-bar {
+            padding: var(--sp-sm) var(--sp-md) var(--sp-xs) var(--sp-md);
+            background: var(--color-surface);
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            flex-shrink: 0;
+            min-height: 36px;
+            align-items: center;
+        }
+        .status-bar .notch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── Views ── */
+        .view {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 var(--sp-md) var(--sp-md) var(--sp-md);
+            background: var(--color-surface);
+            width: 100%;
+            flex-direction: column;
+            animation: fadeSlide 0.3s ease forwards;
+        }
+        .view.active {
+            display: flex;
+        }
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: var(--sp-md);
+        }
+        .view-scroll::-webkit-scrollbar { width: 0; background: transparent; }
+
+        /* ── Splash ── */
+        #splash {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 30px;
+            background: var(--color-surface);
+            min-height: 100%;
+            animation: none;
+        }
+        #splash.active {
+            display: flex;
+        }
+        .splash-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--color-green);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            margin-bottom: var(--sp-lg);
+        }
+
+        /* ── Bottom Nav ── */
+        .bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 4px 0 10px 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            flex-shrink: 0;
+            height: var(--tab-height);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: var(--font-size-tiny);
+            color: var(--color-text-muted);
+            transition: color 0.2s;
+            cursor: pointer;
+            padding: 4px 8px;
+            background: transparent;
+            border: none;
+            font-family: inherit;
+            gap: 1px;
+            position: relative;
+            min-width: 48px;
+        }
+        .nav-item i {
+            font-size: 20px;
+            transition: transform 0.2s;
+        }
+        .nav-item.active {
+            color: var(--color-green);
+            font-weight: 500;
+        }
+        .nav-item.active i {
+            transform: scale(1.05);
+        }
+        .nav-item .badge {
+            background: var(--color-green);
+            color: white;
+            font-size: 8px;
+            border-radius: 50%;
+            padding: 1px 5px;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            font-weight: 600;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            padding: var(--sp-md);
+            border: 1px solid var(--color-border);
+        }
+        .card-green {
+            background: var(--color-green);
+            color: white;
+            border: none;
+        }
+        .card-green .text-muted { color: rgba(255,255,255,0.7); }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            background: var(--color-green);
+            color: white;
+            padding: 0 var(--sp-md);
+            height: var(--btn-height);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: var(--font-size-md);
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: var(--btn-height);
+        }
+        .btn-primary:active { transform: scale(0.97); opacity: 0.85; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-primary.small { height: 40px; min-height: 40px; font-size: var(--font-size-sm); padding: 0 var(--sp-sm); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--color-green);
+            padding: 0 var(--sp-md);
+            height: var(--btn-height);
+            min-height: var(--btn-height);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: var(--font-size-md);
+            border: 1px solid var(--color-green);
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-outline:active { transform: scale(0.97); background: var(--color-green-bg); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--color-green);
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-pill);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+            height: 40px;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ghost:active { background: var(--color-green-bg); }
+
+        .btn-danger-outline {
+            background: transparent;
+            color: var(--color-status-danger);
+            padding: 0 var(--sp-md);
+            height: var(--btn-height);
+            min-height: var(--btn-height);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: var(--font-size-md);
+            border: 1px solid var(--color-status-danger);
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-danger-outline:active { transform: scale(0.97); background: var(--color-status-bg-danger); }
+
+        /* ── Inputs ── */
+        .input-group {
+            background: var(--color-surface);
+            border-radius: var(--radius-sm);
+            padding: 0 var(--sp-md);
+            border: 1px solid var(--color-border);
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            height: var(--input-height);
+            min-height: var(--input-height);
+        }
+        .input-group:focus-within {
+            border-color: var(--color-green);
+            box-shadow: 0 0 0 3px rgba(10, 61, 46, 0.08);
+        }
+        .input-group input,
+        .input-group select {
+            background: transparent;
+            border: none;
+            padding: 0;
+            font-size: var(--font-size-md);
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+            color: var(--color-text-primary);
+            height: 100%;
+            min-height: 40px;
+        }
+        .input-group input::placeholder { color: var(--color-text-muted); }
+        .input-group i {
+            color: var(--color-text-muted);
+            margin-right: var(--sp-sm);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .input-group.readonly {
+            background: var(--color-bg);
+            border-color: var(--color-border);
+        }
+        .input-group.readonly input { color: var(--color-text-secondary); font-weight: 500; cursor: default; }
+
+        /* ── OTP ── */
+        .otp-box {
+            width: 48px;
+            height: 56px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--color-surface);
+            transition: all 0.15s;
+            color: var(--color-text-primary);
+        }
+        .otp-box:focus {
+            border-color: var(--color-green);
+            box-shadow: 0 0 0 3px rgba(10, 61, 46, 0.08);
+            outline: none;
+        }
+
+        /* ── Upload ── */
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--sp-lg) var(--sp-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: var(--color-bg);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .upload-zone:active { transform: scale(0.98); }
+        .upload-zone i { font-size: 28px; color: var(--color-green-mid); margin-bottom: var(--sp-sm); }
+
+        /* ── Steps ── */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sp-sm);
+            margin: var(--sp-md) 0 var(--sp-sm) 0;
+        }
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-border);
+            transition: all 0.3s;
+        }
+        .step-dot.active {
+            background: var(--color-green);
+            width: 28px;
+            border-radius: var(--radius-sm);
+        }
+        .step-dot.done { background: var(--color-green); }
+
+        /* ── Amount Options ── */
+        .amount-option {
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: var(--color-surface);
+            font-weight: 500;
+            color: var(--color-text-primary);
+            min-height: 56px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .amount-option:active { transform: scale(0.96); }
+        .amount-option.selected {
+            border-color: var(--color-green);
+            background: var(--color-green-bg);
+            color: var(--color-green);
+        }
+        .amount-option .sub { font-size: var(--font-size-xs); font-weight: 400; color: var(--color-text-muted); display: block; margin-top: 2px; }
+        .amount-option.selected .sub { color: var(--color-green); }
+
+        /* ── Chips ── */
+        .chip {
+            background: var(--color-green-bg);
+            color: var(--color-green);
+            padding: 6px 16px;
+            border-radius: var(--radius-pill);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .chip:active { transform: scale(0.95); }
+        .chip.active-chip {
+            background: var(--color-green);
+            color: white;
+            border-color: var(--color-green);
+        }
+
+        /* ── Page Header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--sp-md) 0 var(--sp-sm) 0;
+            flex-shrink: 0;
+            min-height: 52px;
+        }
+        .page-header h1 {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--color-text-primary);
+            letter-spacing: -0.3px;
+        }
+        .page-header .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--color-text-primary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-pill);
+            transition: background 0.15s;
+            min-height: 40px;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .page-header .back-btn:active { background: var(--color-bg); }
+        .page-header .action-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-pill);
+            transition: background 0.15s;
+            min-height: 40px;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .page-header .action-btn:active { background: var(--color-bg); }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: var(--color-text-primary);
+            color: white;
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+            z-index: 999;
+            max-width: 88%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+        }
+        @media (min-width: 481px) {
+            .toast { bottom: 100px; }
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.success { background: var(--color-green); }
+        .toast.error { background: var(--color-status-danger); }
+        .toast.info { background: var(--color-text-primary); }
+        .toast i { font-size: 16px; flex-shrink: 0; }
+
+        /* ── Avatar ── */
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--color-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .avatar-sm { width: 36px; height: 36px; font-size: 14px; }
+        .avatar-lg { width: 60px; height: 60px; font-size: 22px; }
+
+        /* ── Badges ── */
+        .badge-green { background: var(--color-green-bg); color: var(--color-green); padding: 4px 12px; border-radius: var(--radius-pill); font-size: var(--font-size-xs); font-weight: 500; }
+        .badge-status { padding: 4px 12px; border-radius: var(--radius-pill); font-size: var(--font-size-tiny); font-weight: 600; display: inline-block; }
+        .badge-status.approved { background: var(--color-status-bg-success); color: var(--color-status-success); }
+        .badge-status.pending { background: var(--color-status-bg-warning); color: var(--color-status-warning); }
+        .badge-status.rejected { background: var(--color-status-bg-danger); color: var(--color-status-danger); }
+        .badge-status.cancelled { background: var(--color-bg); color: var(--color-text-muted); }
+
+        /* ── Transaction Item ── */
+        .tx-item {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: var(--sp-md) 0;
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .tx-item:active { background: var(--color-bg); margin: 0 calc(-1 * var(--sp-md)); padding-left: var(--sp-md); padding-right: var(--sp-md); border-radius: var(--radius-sm); }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: var(--color-green-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-green);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .tx-icon.out { background: var(--color-status-bg-danger); color: var(--color-status-danger); }
+        .tx-icon.pending { background: var(--color-status-bg-warning); color: var(--color-status-warning); }
+
+        /* ── Select Card ── */
+        .select-card {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: var(--sp-md);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            cursor: pointer;
+            transition: all 0.15s;
+            background: var(--color-surface);
+            min-height: 60px;
+        }
+        .select-card:active { transform: scale(0.98); }
+        .select-card.selected {
+            border-color: var(--color-green);
+            background: var(--color-green-bg);
+        }
+        .select-card .icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--color-text-primary);
+            flex-shrink: 0;
+        }
+        .select-card.selected .icon-wrap { background: var(--color-green); color: white; }
+
+        /* ── Channel Card ── */
+        .channel-card {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--sp-md);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            background: var(--color-surface);
+        }
+        .channel-card .channel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: var(--color-green-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--color-green);
+            flex-shrink: 0;
+        }
+        .channel-card .channel-info { flex: 1; }
+        .channel-card .channel-info .name { font-weight: 600; font-size: var(--font-size-sm); }
+        .channel-card .channel-info .detail { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+        .channel-card .channel-remove { color: var(--color-status-danger); cursor: pointer; padding: var(--sp-sm); border: none; background: transparent; font-size: 14px; }
+        .channel-card .channel-remove:active { transform: scale(0.9); }
+
+        /* ── Company Item ── */
+        .company-item {
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.1s;
+            border: 1px solid transparent;
+        }
+        .company-item:active { transform: scale(0.98); }
+        .company-item.selected { border-color: var(--color-green); background: var(--color-green-bg); }
+        .company-item .company-name { font-weight: 600; font-size: var(--font-size-sm); }
+        .company-item .company-detail { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+        /* ── Period Banner ── */
+        .period-banner {
+            background: var(--color-status-bg-info);
+            border-left: 4px solid var(--color-status-info);
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            font-size: var(--font-size-sm);
+        }
+        .period-banner i { color: var(--color-status-info); font-size: 16px; }
+        .period-banner.warning { background: var(--color-status-bg-warning); border-left-color: var(--color-status-warning); }
+        .period-banner.warning i { color: var(--color-status-warning); }
+        .period-banner.success { background: var(--color-status-bg-success); border-left-color: var(--color-status-success); }
+        .period-banner.success i { color: var(--color-status-success); }
+        .period-banner.accent { background: var(--color-green-bg); border-left-color: var(--color-green); }
+        .period-banner.accent i { color: var(--color-green); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 80;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            padding: var(--sp-lg) var(--sp-md) var(--sp-xl) var(--sp-md);
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { 0% { transform: translateY(30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        .modal-handle { width: 36px; height: 4px; background: var(--color-border); border-radius: var(--radius-pill); margin: 0 auto var(--sp-md) auto; }
+
+        /* ── Review Item ── */
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--sp-sm) 0;
+            border-bottom: 1px solid var(--color-border);
+            font-size: var(--font-size-sm);
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-item .label { color: var(--color-text-secondary); }
+        .review-item .value { font-weight: 500; color: var(--color-text-primary); text-align: right; }
+
+        /* ── PIN Overlay ── */
+        #pinOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(8px);
+            z-index: 90;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            animation: fadeSlide 0.3s ease forwards;
+        }
+        #pinOverlay.show { display: flex; }
+        .pin-dots { display: flex; gap: var(--sp-md); margin: var(--sp-lg) 0; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-surface); transition: all 0.15s; }
+        .pin-dot.filled { background: var(--color-green); border-color: var(--color-green); }
+        .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--sp-sm);
+            max-width: 260px;
+            width: 100%;
+        }
+        .pin-key {
+            height: 56px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s;
+            font-family: inherit;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pin-key:active { transform: scale(0.94); background: var(--color-green-bg); }
+        .pin-key.empty { border: none; background: transparent; cursor: default; }
+        .pin-key.empty:active { transform: none; background: transparent; }
+
+        /* ── Success Overlay ── */
+        #successOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            animation: fadeSlide 0.4s ease forwards;
+        }
+        #successOverlay .icon-check {
+            width: 72px;
+            height: 72px;
+            background: var(--color-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            color: white;
+            margin-bottom: var(--sp-lg);
+        }
+
+        /* ── Notification Item ── */
+        .notif-item {
+            display: flex;
+            gap: var(--sp-md);
+            padding: var(--sp-md) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-green-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-green);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .notif-item .notif-time { font-size: var(--font-size-tiny); color: var(--color-text-muted); }
+
+        /* ── Utility ── */
+        .text-muted { color: var(--color-text-muted); }
+        .divider { height: 1px; background: var(--color-border); margin: var(--sp-md) 0; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; align-items: center; gap: var(--sp-sm); }
+        .flex-col { display: flex; flex-direction: column; gap: var(--sp-sm); }
+        .gap-2 { gap: var(--sp-sm); }
+        .gap-3 { gap: var(--sp-sm); }
+        .gap-4 { gap: var(--sp-md); }
+        .mt-1 { margin-top: var(--sp-sm); }
+        .mt-2 { margin-top: var(--sp-md); }
+        .mb-1 { margin-bottom: var(--sp-sm); }
+        .mb-2 { margin-bottom: var(--sp-md); }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: var(--font-size-sm); }
+        .text-xs { font-size: var(--font-size-xs); }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .currency-symbol { font-size: 0.7em; font-weight: 400; opacity: 0.8; }
+        .pulse-dot { width: 6px; height: 6px; background: var(--color-status-success); border-radius: 50%; display: inline-block; animation: pulse 1.8s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+        .security-badge { display: flex; align-items: center; gap: var(--sp-xs); font-size: var(--font-size-xs); color: var(--color-text-secondary); padding: var(--sp-xs) var(--sp-sm); background: var(--color-bg); border-radius: var(--radius-pill); }
+        .trust-row { display: flex; align-items: center; justify-content: center; gap: var(--sp-md); padding: var(--sp-sm) 0; flex-wrap: wrap; }
+        .trust-item { display: flex; align-items: center; gap: var(--sp-xs); font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+        .trust-item i { color: var(--color-green); font-size: 13px; }
+        .company-list { max-height: 200px; overflow-y: auto; }
+        .company-list::-webkit-scrollbar { width: 3px; }
+        .company-list::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-pill); }
+        .pending-badge { background: var(--color-status-bg-warning); color: var(--color-status-warning); padding: 2px 10px; border-radius: var(--radius-pill); font-size: var(--font-size-tiny); font-weight: 600; margin-left: var(--sp-sm); }
+        .approved-badge { background: var(--color-status-bg-success); color: var(--color-status-success); padding: 2px 10px; border-radius: var(--radius-pill); font-size: var(--font-size-tiny); font-weight: 600; margin-left: var(--sp-sm); }
+
+        @media (max-width: 420px) {
+            .otp-box { width: 40px; height: 48px; font-size: 20px; }
+            .amount-option { padding: var(--sp-sm) var(--sp-sm); font-size: var(--font-size-sm); min-height: 48px; }
+            .pin-key { height: 48px; font-size: var(--font-size-lg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <div id="app">
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span>9:41</span>
+                <span class="notch"><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-three-quarters"></i></span>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  SPLASH                                       -->
+            <!-- ============================================= -->
+            <div id="splash" class="active">
+                <div class="splash-logo"><i class="fas fa-wallet"></i></div>
+                <h1 style="font-size:30px; font-weight:700; color:var(--color-green); letter-spacing:-0.5px;">EWA</h1>
+                <p style="color:var(--color-text-secondary); font-size:var(--font-size-md); margin-top:var(--sp-xs); font-weight:500;">Earned Wage Access</p>
+                <p style="color:var(--color-text-muted); font-size:var(--font-size-sm); margin-top:var(--sp-md); text-align:center; max-width:260px; line-height:1.5;">Access your earned wages instantly, securely.</p>
+                <div class="trust-row" style="margin-top:var(--sp-lg);">
+                    <span class="trust-item"><i class="fas fa-shield-alt"></i> 256-bit SSL</span>
+                    <span class="trust-item"><i class="fas fa-lock"></i> ISO 27001</span>
+                    <span class="trust-item"><i class="fas fa-clock"></i> 24/7</span>
+                </div>
+                <div style="margin-top:var(--sp-xl); width:100%; max-width:300px; display:flex; flex-direction:column; gap:var(--sp-sm);">
+                    <button class="btn-primary" onclick="goToView('login')">Get Started <i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-outline" onclick="goToView('login')">Sign In</button>
+                    <button class="btn-ghost" style="justify-content:center; color:var(--color-text-muted);" onclick="runDemo()"><i class="fas fa-play"></i> Run Demo</button>
+                </div>
+                <p style="margin-top:var(--sp-xl); color:var(--color-text-muted); font-size:var(--font-size-xs);">By continuing you agree to our Terms &amp; Privacy Policy</p>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  LOGIN                                       -->
+            <!-- ============================================= -->
+            <div id="login" class="view">
+                <div class="page-header">
+                    <button class="back-btn" onclick="goToView('splash')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Welcome Back</h1>
+                    <div style="width:40px;"></div>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-top:var(--sp-sm);">
+                    <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); line-height:1.6;">Sign in securely to access your earned wages.</p>
+                    <div class="card" style="border-color:var(--color-border);">
+                        <div style="display:flex; flex-direction:column; gap:var(--sp-md);">
+                            <div class="input-group">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" id="phoneInput" placeholder="09 123 456 789" value="09 777 888 999" />
+                            </div>
+                            <button class="btn-primary" onclick="handleLogin()">Continue <i class="fas fa-arrow-right"></i></button>
+                            <div style="display:flex; align-items:center; gap:var(--sp-sm); color:var(--color-text-muted); font-size:var(--font-size-xs);">
+                                <span style="flex:1; height:1px; background:var(--color-border);"></span>
+                                or
+                                <span style="flex:1; height:1px; background:var(--color-border);"></span>
+                            </div>
+                            <div style="display:flex; gap:var(--sp-sm);">
+                                <button class="btn-outline" style="flex:1; padding:var(--sp-sm); font-size:var(--font-size-sm); height:46px; min-height:46px;" onclick="showToast('Google coming soon','info')"><i class="fab fa-google"></i> Google</button>
+                                <button class="btn-outline" style="flex:1; padding:var(--sp-sm); font-size:var(--font-size-sm); height:46px; min-height:46px;" onclick="showToast('Apple coming soon','info')"><i class="fab fa-apple"></i> Apple</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:center;"><span class="security-badge"><i class="fas fa-shield-alt"></i> End-to-end encrypted</span></div>
+                    <div style="text-align:center; color:var(--color-text-muted); font-size:var(--font-size-xs); padding:var(--sp-sm) 0;">By signing in, you agree to our <span style="color:var(--color-green); font-weight:500;">Terms</span> and <span style="color:var(--color-green); font-weight:500;">Privacy Policy</span></div>
+                    <button class="btn-ghost" style="justify-content:center; color:var(--color-text-muted);" onclick="runDemo()"><i class="fas fa-play"></i> Run Demo</button>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  OTP                                         -->
+            <!-- ============================================= -->
+            <div id="otp" class="view">
+                <div class="page-header">
+                    <button class="back-btn" onclick="goToView('login')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Verify Phone</h1>
+                    <div style="width:40px;"></div>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-lg); padding-top:var(--sp-sm);">
+                    <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); line-height:1.6;">We sent a 6-digit code to <br /><strong style="color:var(--color-text-primary);" id="otpPhoneDisplay">09 777 888 999</strong></p>
+                    <div style="display:flex; gap:var(--sp-sm); justify-content:center; padding:var(--sp-sm) 0;" id="otpContainer">
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                    </div>
+                    <button class="btn-primary" onclick="handleOtpVerify()">Verify <i class="fas fa-check"></i></button>
+                    <div style="text-align:center; color:var(--color-text-muted); font-size:var(--font-size-sm);">Didn't receive code? <button class="btn-ghost" style="padding:var(--sp-xs) var(--sp-sm); font-size:var(--font-size-sm);" onclick="showToast('New code sent','success')">Resend</button></div>
+                    <div style="padding:var(--sp-md); background:var(--color-bg); border-radius:var(--radius-sm); text-align:center; color:var(--color-text-secondary); font-size:var(--font-size-xs);"><i class="fas fa-shield-alt" style="color:var(--color-green); margin-right:var(--sp-xs);"></i> Your information is secure and encrypted.</div>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  KYC                                         -->
+            <!-- ============================================= -->
+            <div id="kyc" class="view">
+                <div class="page-header">
+                    <button class="back-btn" onclick="goToView('otp')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>KYC Verification</h1>
+                    <div style="width:40px;"></div>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-top:var(--sp-xs);">
+                    <div class="step-indicator">
+                        <span class="step-dot done"></span>
+                        <span class="step-dot active"></span>
+                        <span class="step-dot"></span>
+                        <span class="step-dot"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:var(--font-size-xs); color:var(--color-text-muted); padding:0 4px;">
+                        <span>Phone</span>
+                        <span style="color:var(--color-green); font-weight:600;">Identity</span>
+                        <span>Employment</span>
+                        <span>Done</span>
+                    </div>
+                    <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); line-height:1.6;">Please verify your identity by uploading the required documents.</p>
+                    <div style="display:flex; flex-direction:column; gap:var(--sp-md);">
+                        <div>
+                            <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-xs);">National Registration Card (NRC)</label>
+                            <div class="upload-zone" onclick="document.getElementById('nrcUpload').click()">
+                                <i class="fas fa-id-card"></i>
+                                <p style="font-weight:500; color:var(--color-text-primary);">Tap to upload NRC</p>
+                                <p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">JPG, PNG or PDF • Max 5MB</p>
+                                <input type="file" id="nrcUpload" accept="image/*,application/pdf" style="display:none;" onchange="handleUpload(this, 'nrcStatus')" />
+                                <div id="nrcStatus" style="margin-top:var(--sp-sm); font-size:var(--font-size-xs); color:var(--color-green); font-weight:500; display:none;"><i class="fas fa-check-circle"></i> Uploaded</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-xs);">Passport or Driver's License</label>
+                            <div class="upload-zone" onclick="document.getElementById('passportUpload').click()">
+                                <i class="fas fa-passport"></i>
+                                <p style="font-weight:500; color:var(--color-text-primary);">Tap to upload</p>
+                                <p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">JPG, PNG or PDF • Max 5MB</p>
+                                <input type="file" id="passportUpload" accept="image/*,application/pdf" style="display:none;" onchange="handleUpload(this, 'passportStatus')" />
+                                <div id="passportStatus" style="margin-top:var(--sp-sm); font-size:var(--font-size-xs); color:var(--color-green); font-weight:500; display:none;"><i class="fas fa-check-circle"></i> Uploaded</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-xs);">Selfie Photo</label>
+                            <div class="upload-zone" onclick="document.getElementById('selfieUpload').click()">
+                                <i class="fas fa-camera"></i>
+                                <p style="font-weight:500; color:var(--color-text-primary);">Take a selfie or upload</p>
+                                <p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">JPG or PNG • Max 2MB</p>
+                                <input type="file" id="selfieUpload" accept="image/*" style="display:none;" onchange="handleUpload(this, 'selfieStatus')" />
+                                <div id="selfieStatus" style="margin-top:var(--sp-sm); font-size:var(--font-size-xs); color:var(--color-green); font-weight:500; display:none;"><i class="fas fa-check-circle"></i> Uploaded</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="handleKycSubmit()" id="kycSubmitBtn" disabled style="opacity:0.5;">Submit KYC <i class="fas fa-arrow-right"></i></button>
+                    <div style="padding:var(--sp-sm); background:var(--color-status-bg-warning); border-radius:var(--radius-sm); border:1px solid #fde68a; font-size:var(--font-size-xs); color:#92400e; display:flex; gap:var(--sp-sm); align-items:flex-start;">
+                        <i class="fas fa-info-circle" style="margin-top:2px;"></i>
+                        <span>Your documents are encrypted and used only for identity verification.</span>
+                    </div>
+                    <button class="btn-ghost" style="justify-content:center; color:var(--color-text-muted);" onclick="demoKyc()"><i class="fas fa-play"></i> Demo: Auto-upload KYC</button>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  EMPLOYMENT                                  -->
+            <!-- ============================================= -->
+            <div id="employment" class="view">
+                <div class="page-header">
+                    <button class="back-btn" onclick="goToView('kyc')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Employment Info</h1>
+                    <button class="action-btn" onclick="showAddCompanyModal()"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-top:var(--sp-xs);">
+                    <div class="step-indicator">
+                        <span class="step-dot done"></span>
+                        <span class="step-dot done"></span>
+                        <span class="step-dot active"></span>
+                        <span class="step-dot"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:var(--font-size-xs); color:var(--color-text-muted); padding:0 4px;">
+                        <span>Phone</span>
+                        <span>Identity</span>
+                        <span style="color:var(--color-green); font-weight:600;">Employment</span>
+                        <span>Done</span>
+                    </div>
+                    <div>
+                        <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-sm);">Select Company</label>
+                        <div class="input-group" style="cursor:pointer;" onclick="toggleCompanySelector()">
+                            <i class="fas fa-building"></i>
+                            <input type="text" id="companyDisplay" placeholder="Tap to select company" readonly value="TechNova Solutions" />
+                            <i class="fas fa-chevron-down" style="margin-left:auto; margin-right:0;"></i>
+                        </div>
+                        <div id="companyListContainer" style="display:none; margin-top:var(--sp-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); overflow:hidden;">
+                            <div class="company-list" id="companyList"></div>
+                            <button class="btn-ghost" style="width:100%; justify-content:center; border-top:1px solid var(--color-border);" onclick="showAddCompanyModal()"><i class="fas fa-plus"></i> Add New Company</button>
+                        </div>
+                        <div id="companyStatusBadge" style="margin-top:var(--sp-xs);"></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:var(--sp-sm);">
+                        <div class="input-group readonly"><i class="fas fa-id-badge"></i><input type="text" id="empEmployeeId" placeholder="Employee ID" value="EMP-2024-0847" readonly /></div>
+                        <div class="input-group readonly"><i class="fas fa-credit-card"></i><input type="text" id="empNrc" placeholder="NRC Number" value="12/ABN(123456)" readonly /></div>
+                        <div class="input-group readonly"><i class="fas fa-briefcase"></i><input type="text" id="empPosition" placeholder="Position" value="Senior Software Engineer" readonly /></div>
+                        <div class="input-group readonly"><i class="fas fa-layer-group"></i><input type="text" id="empDepartment" placeholder="Department" value="Engineering" readonly /></div>
+                        <div class="input-group readonly"><i class="fas fa-map-pin"></i><input type="text" id="empOfficeLocation" placeholder="Office Location" value="Yangon, Myanmar" readonly /></div>
+                    </div>
+                    <div id="employmentVerifySection">
+                        <button class="btn-primary" onclick="handleEmploymentSubmit()" id="employmentVerifyBtn">Verify Employment <i class="fas fa-arrow-right"></i></button>
+                        <div id="employmentVerifyMessage" style="margin-top:var(--sp-sm);"></div>
+                    </div>
+                    <div style="padding:var(--sp-sm); background:var(--color-green-bg); border-radius:var(--radius-sm); border:1px solid #C5DCD0; font-size:var(--font-size-xs); color:var(--color-green); display:flex; gap:var(--sp-sm); align-items:flex-start;">
+                        <i class="fas fa-check-circle" style="margin-top:2px;"></i>
+                        <span>Your employer will be notified to confirm your employment status.</span>
+                    </div>
+                    <button class="btn-ghost" style="justify-content:center; color:var(--color-text-muted);" onclick="demoEmployment()"><i class="fas fa-play"></i> Demo: Auto-fill Employment</button>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  DASHBOARD                                   -->
+            <!-- ============================================= -->
+            <div id="dashboard" class="view" style="padding-bottom:0; padding-left:0; padding-right:0;">
+                <div style="padding:0 var(--sp-md) var(--sp-sm) var(--sp-md);">
+                    <div class="page-header" style="padding-top:var(--sp-sm); padding-bottom:var(--sp-sm);">
+                        <div style="display:flex; align-items:center; gap:var(--sp-sm);">
+                            <div class="avatar" id="dashAvatar">JD</div>
+                            <div>
+                                <div style="font-weight:600; color:var(--color-text-primary); font-size:var(--font-size-md);" id="dashUserName">John Doe</div>
+                                <div style="font-size:var(--font-size-xs); color:var(--color-text-secondary); display:flex; align-items:center; gap:var(--sp-xs);"><span class="pulse-dot"></span> <span id="dashStatus">Active</span></div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:var(--sp-sm);">
+                            <button class="action-btn" onclick="goToView('notifications')" style="position:relative;"><i class="fas fa-bell"></i><span class="badge" style="position:absolute; top:-2px; right:-4px;">3</span></button>
+                            <button class="action-btn" onclick="showToast('Settings coming soon','info')"><i class="fas fa-gear"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-scroll" style="padding:0 var(--sp-md) 80px var(--sp-md); display:flex; flex-direction:column; gap:var(--sp-md);">
+                    <div class="card card-green" style="padding:var(--sp-lg) var(--sp-md); border-radius:var(--radius-lg);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <div style="font-size:var(--font-size-xs); opacity:0.8; font-weight:500;">Wallet Balance</div>
+                                <div style="font-size:32px; font-weight:700; letter-spacing:-0.5px; margin-top:2px;"><span class="currency-symbol">MMK</span> 425,000</div>
+                                <div style="font-size:var(--font-size-xs); opacity:0.7; margin-top:var(--sp-xs);">Next eligible: <strong id="nextEligible">---</strong></div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.15); padding:var(--sp-sm) var(--sp-sm); border-radius:30px; font-size:var(--font-size-xs); font-weight:600;"><i class="fas fa-arrow-up"></i> +12%</div>
+                        </div>
+                        <div style="margin-top:var(--sp-md); display:flex; gap:var(--sp-sm);">
+                            <button class="btn-primary" style="flex:1; background:white; color:var(--color-green); padding:var(--sp-sm); border-radius:var(--radius-sm); font-size:var(--font-size-sm);" onclick="goToView('request')"><i class="fas fa-hand-holding-usd"></i> Request</button>
+                            <button class="btn-primary" style="flex:1; background:rgba(255,255,255,0.15); padding:var(--sp-sm); border-radius:var(--radius-sm); font-size:var(--font-size-sm); border:1px solid rgba(255,255,255,0.15);" onclick="goToView('history')"><i class="fas fa-clock-rotate-left"></i> History</button>
+                        </div>
+                    </div>
+                    <div id="activeAdvanceBanner" class="period-banner warning" style="display:none;">
+                        <i class="fas fa-clock"></i>
+                        <span><strong>Active Advance:</strong> You have an ongoing advance of <strong id="activeAdvanceAmount">---</strong> from <span id="activeAdvanceStart">---</span> to <span id="activeAdvanceEnd">---</span>.</span>
+                    </div>
+                    <div id="noActiveAdvanceBanner" class="period-banner success">
+                        <i class="fas fa-check-circle"></i>
+                        <span><strong>No active advance.</strong> You're eligible to request up to <strong>MMK 500,000</strong> this period.</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-sm);">
+                        <div class="card" style="padding:var(--sp-sm); text-align:center; border-color:var(--color-border); border-radius:var(--radius-sm);"><div style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-green);" id="statAdvances">0</div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">Advances</div></div>
+                        <div class="card" style="padding:var(--sp-sm); text-align:center; border-color:var(--color-border); border-radius:var(--radius-sm);"><div style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-green);" id="statOutstanding">---</div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">Outstanding</div></div>
+                        <div class="card" style="padding:var(--sp-sm); text-align:center; border-color:var(--color-border); border-radius:var(--radius-sm);"><div style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-green);" id="statPayday">Jun 30</div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">Payday</div></div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-sm);"><h3 style="font-size:var(--font-size-md); font-weight:700; color:var(--color-text-primary);">Recent Activity</h3><button class="btn-ghost" style="font-size:var(--font-size-xs);" onclick="goToView('history')">See all →</button></div>
+                        <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md); padding:var(--sp-xs) 0;" id="recentTransactions"></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-sm) var(--sp-md); background:var(--color-green-bg); border-radius:var(--radius-sm); border:1px solid #C5DCD0;">
+                        <i class="fas fa-check-circle" style="color:var(--color-green); font-size:18px;"></i>
+                        <div><div style="font-weight:600; font-size:var(--font-size-sm); color:var(--color-text-primary);">Verified by HR</div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">KYC ✓ • Employment ✓</div></div>
+                        <span class="badge-green" style="margin-left:auto;">Active</span>
+                    </div>
+                </div>
+                <div class="bottom-nav">
+                    <button class="nav-item active" onclick="goToView('dashboard')"><i class="fas fa-house"></i><span>Home</span></button>
+                    <button class="nav-item" onclick="goToView('request')"><i class="fas fa-hand-holding-usd"></i><span>Request</span><span class="badge">1</span></button>
+                    <button class="nav-item" onclick="goToView('history')"><i class="fas fa-clock-rotate-left"></i><span>History</span></button>
+                    <button class="nav-item" onclick="goToView('profile')"><i class="fas fa-user"></i><span>Profile</span></button>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  REQUEST                                     -->
+            <!-- ============================================= -->
+            <div id="request" class="view" style="padding-bottom:0;">
+                <div class="page-header" style="padding:var(--sp-sm) 0 var(--sp-xs) 0;">
+                    <button class="back-btn" onclick="goToView('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Request Advance</h1>
+                    <div style="width:40px;"></div>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-bottom:80px;">
+                    <div class="period-banner success"><i class="fas fa-calendar-alt"></i><span><strong>Period:</strong> Jun 1 – Jun 30, 2026 • <span id="requestPeriodStatus">Eligible</span></span></div>
+                    <div id="requestActiveWarning" class="period-banner warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i><span><strong>Active Advance:</strong> You cannot request until <span id="requestCooldownDate">---</span>.</span></div>
+                    <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">Available</div><div style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-green);"><span class="currency-symbol">MMK</span> 425,000</div></div>
+                            <div style="text-align:right;"><div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Max</div><div style="font-weight:600; color:var(--color-text-primary);"><span class="currency-symbol">MMK</span> 500,000</div></div>
+                        </div>
+                        <div style="margin-top:var(--sp-sm); background:var(--color-bg); border-radius:var(--radius-sm); padding:var(--sp-sm); display:flex; justify-content:space-between; font-size:var(--font-size-xs); color:var(--color-text-secondary);">
+                            <span>Outstanding: <strong style="color:var(--color-text-primary);"><span class="currency-symbol">MMK</span> 175,000</strong></span>
+                            <span>Used: <strong style="color:var(--color-text-primary);" id="requestUsedCount">2 / 4</strong></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-sm);">Select amount</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-sm);">
+                            <div class="amount-option selected" onclick="selectAmount(this, 100000)"><span class="currency-symbol">MMK</span> 100K<span class="sub">Min</span></div>
+                            <div class="amount-option" onclick="selectAmount(this, 250000)"><span class="currency-symbol">MMK</span> 250K<span class="sub">Popular</span></div>
+                            <div class="amount-option" onclick="selectAmount(this, 425000)"><span class="currency-symbol">MMK</span> 425K<span class="sub">Max</span></div>
+                        </div>
+                        <div style="margin-top:var(--sp-sm);">
+                            <div class="input-group"><i class="fas fa-pen"></i><input type="text" placeholder="Or enter custom" value="250,000" id="requestCustomAmount" /></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-primary); display:block; margin-bottom:var(--sp-sm);">Disbursement Channel</label>
+                        <div id="channelList" style="display:flex; flex-direction:column; gap:var(--sp-sm);"></div>
+                        <button class="btn-ghost" style="justify-content:center; margin-top:var(--sp-xs);" onclick="showAddChannelModal()"><i class="fas fa-plus"></i> Add channel</button>
+                    </div>
+                    <div style="padding:var(--sp-sm) var(--sp-md); background:var(--color-bg); border-radius:var(--radius-sm); display:flex; justify-content:space-between; font-size:var(--font-size-sm); color:var(--color-text-secondary);">
+                        <span>Fee (2.5%)</span>
+                        <span style="font-weight:600; color:var(--color-text-primary);" id="requestFeeDisplay">MMK 6,250</span>
+                    </div>
+                    <button class="btn-primary" onclick="showPinAndPreview()" style="margin-top:var(--sp-xs);" id="requestSubmitBtn">Continue <i class="fas fa-arrow-right"></i></button>
+                    <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); text-align:center; padding:var(--sp-sm) 0;"><i class="fas fa-info-circle"></i> Funds available after approval.</div>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  HISTORY                                     -->
+            <!-- ============================================= -->
+            <div id="history" class="view" style="padding-bottom:0;">
+                <div class="page-header" style="padding:var(--sp-sm) 0 var(--sp-xs) 0;">
+                    <button class="back-btn" onclick="goToView('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Transaction History</h1>
+                    <button class="action-btn" onclick="showToast('Filter options','info')"><i class="fas fa-sliders"></i></button>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-bottom:80px;">
+                    <div style="display:flex; gap:var(--sp-sm); overflow-x:auto; padding-bottom:var(--sp-xs); flex-wrap:wrap;" id="historyChips">
+                        <span class="chip active-chip" data-filter="all" onclick="filterHistory(this)">All</span>
+                        <span class="chip" data-filter="advance" onclick="filterHistory(this)">Advances</span>
+                        <span class="chip" data-filter="repayment" onclick="filterHistory(this)">Repayments</span>
+                        <span class="chip" data-filter="pending" onclick="filterHistory(this)">Pending</span>
+                        <span class="chip" data-filter="cancelled" onclick="filterHistory(this)">Cancelled</span>
+                    </div>
+                    <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md); padding:var(--sp-xs) 0;" id="historyList"></div>
+                    <div style="text-align:center; color:var(--color-text-muted); font-size:var(--font-size-xs); padding:var(--sp-sm) 0;" id="historyCount">Showing 0 transactions</div>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  TRANSACTION DETAIL                          -->
+            <!-- ============================================= -->
+            <div id="transactionDetail" class="view" style="padding-bottom:0;">
+                <div class="page-header" style="padding:var(--sp-sm) 0 var(--sp-xs) 0;">
+                    <button class="back-btn" onclick="goToView('history')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Transaction Detail</h1>
+                    <div style="width:40px;"></div>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-bottom:80px;" id="txDetailContent"></div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  PROFILE                                     -->
+            <!-- ============================================= -->
+            <div id="profile" class="view" style="padding-bottom:0;">
+                <div class="page-header" style="padding:var(--sp-sm) 0 var(--sp-xs) 0;">
+                    <button class="back-btn" onclick="goToView('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Profile</h1>
+                    <button class="action-btn" onclick="showToast('Settings','info')"><i class="fas fa-gear"></i></button>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-md); padding-bottom:80px;">
+                    <div style="display:flex; align-items:center; gap:var(--sp-md); padding:var(--sp-md); background:var(--color-bg); border-radius:var(--radius-md);">
+                        <div class="avatar avatar-lg" id="profileAvatar">JD</div>
+                        <div>
+                            <div style="font-weight:700; font-size:var(--font-size-lg); color:var(--color-text-primary);" id="profileName">John Doe</div>
+                            <div style="font-size:var(--font-size-sm); color:var(--color-text-secondary);" id="profilePosition">Senior Software Engineer</div>
+                            <div style="font-size:var(--font-size-xs); color:var(--color-green); display:flex; align-items:center; gap:var(--sp-xs); margin-top:2px;"><span class="pulse-dot" style="width:6px; height:6px;"></span> <span id="profileVerifyStatus">Verified</span></div>
+                        </div>
+                        <button class="btn-ghost" style="margin-left:auto; background:var(--color-green); color:white; padding:var(--sp-sm) var(--sp-md); border-radius:30px; font-size:var(--font-size-xs);" onclick="showToast('Edit profile','info')">Edit</button>
+                    </div>
+                    <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md); padding:var(--sp-xs) 0;">
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Phone</span><span style="font-weight:500; color:var(--color-text-primary);" id="profilePhone">09 777 888 999</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Email</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileEmail">john.doe@email.com</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Employee ID</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileEmployeeId">EMP-2024-0847</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">NRC</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileNrc">12/ABN(123456)</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Company</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileCompany">TechNova Solutions</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Department</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileDept">Engineering</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between;"><span style="color:var(--color-text-secondary);">Location</span><span style="font-weight:500; color:var(--color-text-primary);" id="profileLocation">Yangon, Myanmar</span></div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-sm);"><h3 style="font-size:var(--font-size-sm); font-weight:700; color:var(--color-text-primary);">Received Channels</h3><button class="btn-ghost" style="font-size:var(--font-size-xs);" onclick="showAddChannelModal()"><i class="fas fa-plus"></i> Add</button></div>
+                        <div id="profileChannelList" style="display:flex; flex-direction:column; gap:var(--sp-sm);"></div>
+                    </div>
+                    <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md); padding:var(--sp-xs) 0;">
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">Monthly Salary</span><span style="font-weight:600; color:var(--color-text-primary);" id="profileSalary">MMK 2,500,000</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between; border-bottom:1px solid var(--color-border);"><span style="color:var(--color-text-secondary);">EWA Limit</span><span style="font-weight:600; color:var(--color-green);" id="profileLimit">MMK 500,000</span></div>
+                        <div style="padding:var(--sp-sm) var(--sp-md); display:flex; justify-content:space-between;"><span style="color:var(--color-text-secondary);">Available Balance</span><span style="font-weight:600; color:var(--color-green);" id="profileBalance">MMK 425,000</span></div>
+                    </div>
+                    <button class="btn-danger-outline" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+                    <div style="text-align:center; font-size:var(--font-size-xs); color:var(--color-text-muted); padding:var(--sp-sm) 0;">EWA v2.4.1 <i class="fas fa-heart" style="color:var(--color-green); margin:0 var(--sp-xs);"></i> Secure</div>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  NOTIFICATIONS                               -->
+            <!-- ============================================= -->
+            <div id="notifications" class="view" style="padding-bottom:0;">
+                <div class="page-header" style="padding:var(--sp-sm) 0 var(--sp-xs) 0;">
+                    <button class="back-btn" onclick="goToView('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                    <h1>Notifications</h1>
+                    <button class="action-btn" onclick="markAllRead()"><i class="fas fa-check-double"></i></button>
+                </div>
+                <div class="view-scroll" style="display:flex; flex-direction:column; gap:var(--sp-sm); padding-bottom:80px;" id="notificationList"></div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  SUCCESS OVERLAY                             -->
+            <!-- ============================================= -->
+            <div id="successOverlay">
+                <div class="icon-check"><i class="fas fa-check"></i></div>
+                <h2 style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-text-primary); text-align:center;">Request Submitted</h2>
+                <p style="color:var(--color-text-secondary); text-align:center; margin-top:var(--sp-sm); font-size:var(--font-size-md); max-width:260px;">Your advance of <strong style="color:var(--color-green);" id="successAmount">MMK 250,000</strong> has been submitted.</p>
+                <p style="color:var(--color-text-muted); text-align:center; font-size:var(--font-size-xs); margin-top:var(--sp-xs);"><i class="fas fa-clock"></i> Pending HR approval</p>
+                <div style="margin-top:var(--sp-xl); width:100%; max-width:300px; display:flex; flex-direction:column; gap:var(--sp-sm);">
+                    <button class="btn-primary" onclick="closeSuccess()">Go to Dashboard <i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-outline" onclick="closeSuccess(); goToView('history')">View Transaction</button>
+                    <button class="btn-danger-outline" style="border-color:var(--color-status-danger); color:var(--color-status-danger);" onclick="cancelRequest()"><i class="fas fa-times"></i> Cancel Request</button>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  PIN OVERLAY                                 -->
+            <!-- ============================================= -->
+            <div id="pinOverlay">
+                <h2 style="font-size:var(--font-size-xl); font-weight:700; color:var(--color-text-primary);">Enter PIN</h2>
+                <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); margin-top:var(--sp-xs);">Confirm your identity (Demo PIN: any 4 digits)</p>
+                <div class="pin-dots" id="pinDots">
+                    <span class="pin-dot" data-index="0"></span>
+                    <span class="pin-dot" data-index="1"></span>
+                    <span class="pin-dot" data-index="2"></span>
+                    <span class="pin-dot" data-index="3"></span>
+                </div>
+                <div style="font-size:var(--font-size-xs); color:var(--color-status-danger); min-height:20px;" id="pinError"></div>
+                <div class="pin-keypad" id="pinKeypad">
+                    <button class="pin-key" data-value="1">1</button><button class="pin-key" data-value="2">2</button><button class="pin-key" data-value="3">3</button>
+                    <button class="pin-key" data-value="4">4</button><button class="pin-key" data-value="5">5</button><button class="pin-key" data-value="6">6</button>
+                    <button class="pin-key" data-value="7">7</button><button class="pin-key" data-value="8">8</button><button class="pin-key" data-value="9">9</button>
+                    <button class="pin-key empty"></button><button class="pin-key" data-value="0">0</button><button class="pin-key" data-value="delete"><i class="fas fa-delete-left"></i></button>
+                </div>
+                <button class="btn-ghost" style="margin-top:var(--sp-md);" onclick="closePin()">Cancel</button>
+            </div>
+
+            <!-- ============================================= -->
+            <!--  MODALS                                      -->
+            <!-- ============================================= -->
+            <div class="modal-overlay" id="addCompanyModal">
+                <div class="modal-content">
+                    <div class="modal-handle"></div>
+                    <h2 style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--sp-md);">Add Company</h2>
+                    <div style="display:flex; flex-direction:column; gap:var(--sp-sm);">
+                        <div class="input-group"><i class="fas fa-building"></i><input type="text" id="compName" placeholder="Company Name" /></div>
+                        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="compHR" placeholder="HR Contact" /></div>
+                        <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="compPhone" placeholder="HR Phone" /></div>
+                        <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="compEmail" placeholder="HR Email" /></div>
+                        <button class="btn-primary" onclick="addCompany()">Save Company</button>
+                        <button class="btn-outline" onclick="closeModal('addCompanyModal')">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="addChannelModal">
+                <div class="modal-content">
+                    <div class="modal-handle"></div>
+                    <h2 style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--sp-md);">Add Channel</h2>
+                    <div style="display:flex; flex-direction:column; gap:var(--sp-sm);">
+                        <div class="input-group">
+                            <i class="fas fa-wallet"></i>
+                            <select id="channelType" style="border:none; background:transparent; width:100%; padding:12px 0; font-size:var(--font-size-md); font-family:inherit; color:var(--color-text-primary); outline:none;">
+                                <option value="KBZPay">KBZPay</option><option value="MoMoney">MoMoney</option><option value="Wave">Wave</option><option value="UAB">UAB</option>
+                            </select>
+                        </div>
+                        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="channelName" placeholder="Account Holder Name" value="John Doe" /></div>
+                        <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="channelPhone" placeholder="Phone Number" value="09 777 888 999" /></div>
+                        <div class="upload-zone" onclick="document.getElementById('qrUpload').click()" style="min-height:70px; padding:var(--sp-md);">
+                            <i class="fas fa-qrcode"></i>
+                            <p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Tap to upload QR code (optional)</p>
+                            <input type="file" id="qrUpload" accept="image/*" style="display:none;" onchange="handleQrUpload(this)" />
+                            <div id="qrPreview" style="display:none; margin-top:var(--sp-sm);"><img id="qrPreviewImg" style="max-width:70px; max-height:70px; border-radius:var(--radius-sm);" /></div>
+                        </div>
+                        <button class="btn-primary" onclick="addChannel()">Save Channel</button>
+                        <button class="btn-outline" onclick="closeModal('addChannelModal')">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="previewModal">
+                <div class="modal-content">
+                    <div class="modal-handle"></div>
+                    <h2 style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--sp-sm);">Review Request</h2>
+                    <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); margin-bottom:var(--sp-md);">Please confirm the details below</p>
+                    <div id="previewContent" style="margin-bottom:var(--sp-md);"></div>
+                    <div style="display:flex; gap:var(--sp-sm);">
+                        <button class="btn-primary" style="flex:1; background:var(--color-green);" onclick="submitRequest()">Confirm <i class="fas fa-check"></i></button>
+                        <button class="btn-outline" style="flex:1;" onclick="closeModal('previewModal')">Edit</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="companySelectorModal">
+                <div class="modal-content">
+                    <div class="modal-handle"></div>
+                    <h2 style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--sp-sm);">Select Company</h2>
+                    <div id="companySelectorList" style="max-height:300px; overflow-y:auto; margin-bottom:var(--sp-md);"></div>
+                    <button class="btn-ghost" style="width:100%; justify-content:center; border-top:1px solid var(--color-border); padding-top:var(--sp-md);" onclick="showAddCompanyModal(); closeModal('companySelectorModal');"><i class="fas fa-plus"></i> Add New Company</button>
+                    <button class="btn-outline" style="margin-top:var(--sp-sm);" onclick="closeModal('companySelectorModal')">Cancel</button>
+                </div>
+            </div>
+
+        </div><!-- end #app -->
+    </div><!-- end .phone-frame -->
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <i id="toastIcon" class="fas fa-info-circle"></i>
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <script>
+        // ================================================================
+        //  STATE
+        // ================================================================
+        const state = {
+            currentView: 'splash',
+            selectedAmount: 250000,
+            selectedChannel: null,
+            pin: '',
+            user: {
+                name: 'John Doe',
+                phone: '09 777 888 999',
+                email: 'john.doe@email.com',
+                employeeId: 'EMP-2024-0847',
+                nrc: '12/ABN(123456)',
+                position: 'Senior Software Engineer',
+                department: 'Engineering',
+                officeLocation: 'Yangon, Myanmar',
+                salary: 2500000,
+                limit: 500000,
+                balance: 425000,
+                kycVerified: false,   // starts false, becomes true after KYC
+                employmentVerified: false
+            },
+            companies: [
+                { id: 1, name: 'TechNova Solutions', hrContact: 'Sarah Lee', hrPhone: '09 123 456 789', hrEmail: 'hr@technova.com', status: 'approved' },
+                { id: 2, name: 'Global Innovations Ltd', hrContact: 'Michael Tan', hrPhone: '09 987 654 321', hrEmail: 'hr@globalinnovations.com', status: 'pending' }
+            ],
+            selectedCompanyId: 1,
+            channels: [
+                { id: 1, type: 'MoMoney', name: 'John Doe', phone: '09 777 888 999', qr: null },
+                { id: 2, type: 'KBZPay', name: 'John Doe', phone: '09 777 888 999', qr: null }
+            ],
+            transactions: [
+                { id: 1, type: 'advance', amount: 250000, date: '2026-06-18T14:30:00', status: 'approved', description: 'Salary Advance', fee: 6250, channel: 'MoMoney', period: 'Jun 2026' },
+                { id: 2, type: 'repayment', amount: 75000, date: '2026-06-15T09:00:00', status: 'approved', description: 'Repayment', fee: 0, channel: 'MoMoney', period: 'Jun 2026' },
+                { id: 3, type: 'advance', amount: 150000, date: '2026-06-10T11:15:00', status: 'approved', description: 'Salary Advance', fee: 3750, channel: 'KBZPay', period: 'Jun 2026' },
+                { id: 4, type: 'repayment', amount: 100000, date: '2026-06-05T16:20:00', status: 'pending', description: 'Repayment', fee: 0, channel: 'MoMoney', period: 'Jun 2026' }
+            ],
+            notifications: [
+                { id: 1, title: 'Advance Approved', message: 'Your advance of MMK 250,000 has been approved.', time: '2026-06-18T14:35:00', read: false, icon: 'check-circle' },
+                { id: 2, title: 'Repayment Due', message: 'Your repayment of MMK 75,000 is due on Jun 30, 2026.', time: '2026-06-15T10:00:00', read: false, icon: 'clock' },
+                { id: 3, title: 'KYC Verified', message: 'Your KYC documents have been verified successfully.', time: '2026-06-14T09:00:00', read: false, icon: 'shield-alt' }
+            ],
+            activeAdvance: { amount: 250000, start: '2026-06-10', end: '2026-06-30', cooldown: '2026-06-30' },
+            hasActiveAdvance: true,
+            pendingRequest: null,
+            companySelectorOpen: false
+        };
+
+        let toastTimer, channelIdCounter = 3, companyIdCounter = 3, txIdCounter = 5, notifIdCounter = 4;
+        let pinValue = '';
+        let pendingRequestData = null;
+        let qrDataUrl = null;
+        let uploads = { nrc: false, passport: false, selfie: false };
+
+        // ================================================================
+        //  TOAST
+        // ================================================================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            icon.className = '';
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+                toast.className = 'toast success';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle';
+                toast.className = 'toast error';
+            } else {
+                icon.className = 'fas fa-info-circle';
+                toast.className = 'toast info';
+            }
+            msg.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        // ================================================================
+        //  NAVIGATION
+        // ================================================================
+        function goToView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('splash')?.classList.remove('active');
+            if (viewId === 'splash') {
+                document.getElementById('splash').classList.add('active');
+                state.currentView = 'splash';
+                updateNav();
+                return;
+            }
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.add('active');
+                const scroller = target.querySelector('.view-scroll');
+                if (scroller) scroller.scrollTop = 0;
+                state.currentView = viewId;
+                updateNav();
+            } else {
+                document.getElementById('splash').classList.add('active');
+                state.currentView = 'splash';
+                updateNav();
+            }
+
+            // Refresh views on navigation
+            if (viewId === 'dashboard') renderDashboard();
+            if (viewId === 'history') renderHistory('all');
+            if (viewId === 'request') renderRequest();
+            if (viewId === 'profile') renderProfile();
+            if (viewId === 'notifications') renderNotifications();
+            if (viewId === 'employment') updateEmploymentView();
+            if (viewId === 'otp') focusFirstOtp();
+        }
+
+        function updateNav() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                const text = (item.querySelector('span')?.textContent || '').toLowerCase();
+                if (state.currentView === 'dashboard' && text === 'home') item.classList.add('active');
+                else if (state.currentView === 'request' && text === 'request') item.classList.add('active');
+                else if (state.currentView === 'history' && text === 'history') item.classList.add('active');
+                else if (state.currentView === 'profile' && text === 'profile') item.classList.add('active');
+            });
+        }
+
+        // ================================================================
+        //  LOGIN & AUTH
+        // ================================================================
+        function handleLogin() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            if (phone.length < 8) {
+                showToast('Please enter a valid phone number', 'error');
+                return;
+            }
+            document.getElementById('otpPhoneDisplay').textContent = phone;
+            goToView('otp');
+            showToast('Code sent to ' + phone, 'success');
+        }
+
+        function focusFirstOtp() {
+            const boxes = document.querySelectorAll('.otp-box');
+            if (boxes.length > 0) boxes[0].focus();
+        }
+
+        function setupOtp() {
+            const boxes = document.querySelectorAll('.otp-box');
+            boxes.forEach((input, index) => {
+                input.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/\D/g, '');
+                    if (this.value.length === 1 && index < boxes.length - 1) {
+                        boxes[index + 1].focus();
+                    }
+                    if (Array.from(boxes).every(b => b.value.length === 1)) {
+                        setTimeout(handleOtpVerify, 300);
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        boxes[index - 1].focus();
+                    }
+                });
+            });
+            // initial focus on first box only when view becomes active (handled in goToView)
+        }
+
+        function handleOtpVerify() {
+            // In real app validate code, here we just proceed
+            showToast('Phone verified', 'success');
+            setTimeout(() => goToView('kyc'), 400);
+        }
+
+        // ================================================================
+        //  KYC
+        // ================================================================
+        function handleUpload(input, statusId) {
+            if (input.files && input.files.length > 0) {
+                const status = document.getElementById(statusId);
+                if (status) status.style.display = 'block';
+                if (statusId === 'nrcStatus') uploads.nrc = true;
+                else if (statusId === 'passportStatus') uploads.passport = true;
+                else if (statusId === 'selfieStatus') uploads.selfie = true;
+                showToast('Document uploaded', 'success');
+                checkKycReady();
+            }
+        }
+
+        function checkKycReady() {
+            const btn = document.getElementById('kycSubmitBtn');
+            if (uploads.nrc && uploads.passport && uploads.selfie) {
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            } else {
+                btn.style.opacity = '0.5';
+                btn.disabled = true;
+            }
+        }
+
+        function handleKycSubmit() {
+            if (!uploads.nrc || !uploads.passport || !uploads.selfie) {
+                showToast('Upload all documents', 'error');
+                return;
+            }
+            showToast('KYC submitted for review', 'success');
+            state.user.kycVerified = true;
+            setTimeout(() => goToView('employment'), 500);
+        }
+
+        function demoKyc() {
+            uploads.nrc = uploads.passport = uploads.selfie = true;
+            document.getElementById('nrcStatus').style.display = 'block';
+            document.getElementById('passportStatus').style.display = 'block';
+            document.getElementById('selfieStatus').style.display = 'block';
+            checkKycReady();
+            showToast('KYC auto-uploaded', 'success');
+        }
+
+        // ================================================================
+        //  EMPLOYMENT
+        // ================================================================
+        function renderCompanyList() {
+            const list = document.getElementById('companyList');
+            if (!list) return;
+            list.innerHTML = '';
+            state.companies.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'company-item' + (c.id === state.selectedCompanyId ? ' selected' : '');
+                const badge = c.status === 'approved' ? '<span class="approved-badge">Approved</span>' : '<span class="pending-badge">Pending</span>';
+                div.innerHTML = `<div class="company-name">${c.name} ${badge}</div><div class="company-detail">HR: ${c.hrContact} • ${c.hrPhone}</div>`;
+                div.onclick = () => selectCompany(c.id);
+                list.appendChild(div);
+            });
+            updateEmploymentView();
+        }
+
+        function updateEmploymentView() {
+            const company = state.companies.find(c => c.id === state.selectedCompanyId);
+            if (company) {
+                document.getElementById('companyDisplay').value = company.name;
+                const badge = document.getElementById('companyStatusBadge');
+                badge.innerHTML = company.status === 'approved' ?
+                    '<span class="approved-badge">Company Approved</span>' :
+                    '<span class="pending-badge">Company Pending</span>';
+                document.getElementById('empEmployeeId').value = state.user.employeeId;
+                document.getElementById('empNrc').value = state.user.nrc;
+                document.getElementById('empPosition').value = state.user.position;
+                document.getElementById('empDepartment').value = state.user.department;
+                document.getElementById('empOfficeLocation').value = state.user.officeLocation;
+
+                const btn = document.getElementById('employmentVerifyBtn');
+                const msg = document.getElementById('employmentVerifyMessage');
+                if (company.status === 'approved') {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    msg.innerHTML = '';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    msg.innerHTML = '<span style="color:var(--color-status-warning); font-size:var(--font-size-xs);"><i class="fas fa-clock"></i> Company pending approval.</span>';
+                }
+            }
+        }
+
+        function selectCompany(id) {
+            state.selectedCompanyId = id;
+            const company = state.companies.find(c => c.id === id);
+            if (company) {
+                document.getElementById('companyDisplay').value = company.name;
+                updateEmploymentView();
+            }
+            state.companySelectorOpen = false;
+            document.getElementById('companyListContainer').style.display = 'none';
+            closeModal('companySelectorModal');
+        }
+
+        function toggleCompanySelector() {
+            state.companySelectorOpen = !state.companySelectorOpen;
+            const container = document.getElementById('companyListContainer');
+            container.style.display = state.companySelectorOpen ? 'block' : 'none';
+            if (state.companySelectorOpen) renderCompanyList();
+        }
+
+        function showAddCompanyModal() {
+            document.getElementById('addCompanyModal').classList.add('show');
+            document.getElementById('compName').value = '';
+            document.getElementById('compHR').value = '';
+            document.getElementById('compPhone').value = '';
+            document.getElementById('compEmail').value = '';
+        }
+
+        function addCompany() {
+            const name = document.getElementById('compName').value.trim();
+            const hr = document.getElementById('compHR').value.trim();
+            if (!name || !hr) {
+                showToast('Company Name and HR Contact required', 'error');
+                return;
+            }
+            const newCompany = {
+                id: companyIdCounter++,
+                name: name,
+                hrContact: hr,
+                hrPhone: document.getElementById('compPhone').value.trim(),
+                hrEmail: document.getElementById('compEmail').value.trim(),
+                status: 'pending'
+            };
+            state.companies.push(newCompany);
+            closeModal('addCompanyModal');
+            state.selectedCompanyId = newCompany.id;
+            updateEmploymentView();
+            renderCompanyList();
+            showToast('Company added (pending)', 'info');
+        }
+
+        function handleEmploymentSubmit() {
+            const company = state.companies.find(c => c.id === state.selectedCompanyId);
+            if (!company) {
+                showToast('Select a company', 'error');
+                return;
+            }
+            if (company.status !== 'approved') {
+                showToast('Company pending approval', 'error');
+                return;
+            }
+            state.user.employmentVerified = true;
+            showToast('Employment verification sent', 'success');
+            setTimeout(() => {
+                showToast('Employment verified!', 'success');
+                setTimeout(() => goToView('dashboard'), 500);
+            }, 1000);
+        }
+
+        function demoEmployment() {
+            const approved = state.companies.find(c => c.status === 'approved');
+            if (approved) {
+                state.selectedCompanyId = approved.id;
+                selectCompany(approved.id);
+                showToast('Employment auto-filled', 'success');
+            } else {
+                showToast('No approved company found', 'error');
+            }
+        }
+
+        // ================================================================
+        //  DASHBOARD
+        // ================================================================
+        function renderDashboard() {
+            document.getElementById('dashAvatar').textContent = state.user.name.split(' ').map(n => n[0]).join('');
+            document.getElementById('dashUserName').textContent = state.user.name;
+
+            // Update "Next eligible" dynamically
+            const nextEligibleEl = document.getElementById('nextEligible');
+            if (state.hasActiveAdvance) {
+                nextEligibleEl.textContent = state.activeAdvance.cooldown;
+            } else {
+                nextEligibleEl.textContent = 'Now eligible';
+            }
+
+            if (state.hasActiveAdvance) {
+                document.getElementById('activeAdvanceBanner').style.display = 'flex';
+                document.getElementById('noActiveAdvanceBanner').style.display = 'none';
+                document.getElementById('activeAdvanceAmount').textContent = 'MMK ' + state.activeAdvance.amount.toLocaleString();
+                document.getElementById('activeAdvanceStart').textContent = state.activeAdvance.start;
+                document.getElementById('activeAdvanceEnd').textContent = state.activeAdvance.end;
+            } else {
+                document.getElementById('activeAdvanceBanner').style.display = 'none';
+                document.getElementById('noActiveAdvanceBanner').style.display = 'flex';
+            }
+
+            const advances = state.transactions.filter(t => t.type === 'advance' && t.status === 'approved');
+            document.getElementById('statAdvances').textContent = advances.length;
+            const outstanding = advances.reduce((s, t) => s + t.amount, 0) -
+                state.transactions.filter(t => t.type === 'repayment' && t.status === 'approved').reduce((s, t) => s + t.amount, 0);
+            document.getElementById('statOutstanding').textContent = 'MMK ' + (outstanding / 1000).toFixed(0) + 'K';
+
+            const recent = state.transactions.slice(0, 3);
+            const container = document.getElementById('recentTransactions');
+            container.innerHTML = '';
+            recent.forEach(tx => {
+                const div = document.createElement('div');
+                div.className = 'tx-item';
+                div.style.padding = 'var(--sp-sm) var(--sp-md)';
+                const isOut = tx.type === 'repayment';
+                const iconClass = isOut ? 'out' : '';
+                const sign = isOut ? '-' : '+';
+                let color = isOut ? 'var(--color-status-danger)' : 'var(--color-green)';
+                if (tx.status === 'pending') color = 'var(--color-status-warning)';
+                if (tx.status === 'cancelled') color = 'var(--color-text-muted)';
+                const icon = isOut ? 'fa-arrow-up' : (tx.status === 'pending' ? 'fa-clock' : 'fa-arrow-down');
+                const badge = tx.status === 'pending' ? '<span class="badge-status pending">Pending</span>' :
+                             tx.status === 'approved' ? '<span class="badge-status approved">Approved</span>' : '';
+                div.innerHTML = `
+                    <div class="tx-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:var(--font-size-sm); color:var(--color-text-primary);">${tx.description}</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${new Date(tx.date).toLocaleDateString()} • ${new Date(tx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div style="margin-top:2px;">${badge}</div>
+                    </div>
+                    <div style="font-weight:700; color:${color}; font-size:var(--font-size-sm);">${sign}MMK ${(tx.amount/1000).toFixed(0)}K</div>
+                `;
+                div.onclick = () => showTransactionDetail(tx.id);
+                container.appendChild(div);
+            });
+            if (recent.length === 0) {
+                container.innerHTML = '<div style="padding:var(--sp-md); text-align:center; color:var(--color-text-muted); font-size:var(--font-size-sm);">No transactions</div>';
+            }
+        }
+
+        // ================================================================
+        //  REQUEST
+        // ================================================================
+        function renderRequest() {
+            if (state.hasActiveAdvance) {
+                document.getElementById('requestActiveWarning').style.display = 'flex';
+                document.getElementById('requestCooldownDate').textContent = state.activeAdvance.cooldown;
+                document.getElementById('requestSubmitBtn').disabled = true;
+                document.getElementById('requestSubmitBtn').style.opacity = '0.5';
+            } else {
+                document.getElementById('requestActiveWarning').style.display = 'none';
+                document.getElementById('requestSubmitBtn').disabled = false;
+                document.getElementById('requestSubmitBtn').style.opacity = '1';
+            }
+            document.getElementById('requestPeriodStatus').textContent = state.hasActiveAdvance ? 'On cooldown' : 'Eligible';
+            const used = state.transactions.filter(t => t.type === 'advance' && t.status === 'approved').length;
+            document.getElementById('requestUsedCount').textContent = used + ' / 4';
+            renderChannelList();
+            updateRequestFee(state.selectedAmount || 250000);
+        }
+
+        function renderChannelList() {
+            const container = document.getElementById('channelList');
+            if (!container) return;
+            container.innerHTML = '';
+            if (state.channels.length === 0) {
+                container.innerHTML = '<div style="padding:var(--sp-md); text-align:center; color:var(--color-text-muted); font-size:var(--font-size-sm);">No channels added.</div>';
+                return;
+            }
+            state.channels.forEach(ch => {
+                const div = document.createElement('div');
+                div.className = 'select-card' + (state.selectedChannel?.id === ch.id ? ' selected' : '');
+                const icons = { KBZPay: 'fa-wallet', MoMoney: 'fa-mobile-screen', Wave: 'fa-wave-square', UAB: 'fa-university' };
+                const icon = icons[ch.type] || 'fa-wallet';
+                div.innerHTML = `
+                    <div class="icon-wrap"><i class="fas ${icon}"></i></div>
+                    <div style="flex:1;"><div style="font-weight:600; color:var(--color-text-primary);">${ch.type}</div><div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${ch.name} • ${ch.phone}</div></div>
+                    <i class="fas ${state.selectedChannel?.id === ch.id ? 'fa-check-circle' : 'fa-circle'}" style="color:${state.selectedChannel?.id === ch.id ? 'var(--color-green)' : 'var(--color-border)'}; font-size:18px;"></i>
+                `;
+                div.onclick = () => selectChannel(ch.id);
+                container.appendChild(div);
+            });
+        }
+
+        function selectChannel(id) {
+            const ch = state.channels.find(c => c.id === id);
+            if (ch) {
+                state.selectedChannel = ch;
+                renderChannelList();
+            }
+        }
+
+        function selectAmount(el, amount) {
+            document.querySelectorAll('.amount-option').forEach(a => a.classList.remove('selected'));
+            el.classList.add('selected');
+            state.selectedAmount = amount;
+            document.getElementById('requestCustomAmount').value = amount.toLocaleString();
+            updateRequestFee(amount);
+        }
+
+        function updateRequestFee(amount) {
+            document.getElementById('requestFeeDisplay').textContent = 'MMK ' + Math.round(amount * 0.025).toLocaleString();
+        }
+
+        // ================================================================
+        //  CHANNEL MANAGEMENT
+        // ================================================================
+        function showAddChannelModal() {
+            document.getElementById('addChannelModal').classList.add('show');
+            document.getElementById('channelName').value = state.user.name;
+            document.getElementById('channelPhone').value = state.user.phone;
+            document.getElementById('qrPreview').style.display = 'none';
+            document.getElementById('qrUpload').value = '';
+        }
+
+        function handleQrUpload(input) {
+            if (input.files && input.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    qrDataUrl = e.target.result;
+                    document.getElementById('qrPreviewImg').src = qrDataUrl;
+                    document.getElementById('qrPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function addChannel() {
+            const type = document.getElementById('channelType').value;
+            const name = document.getElementById('channelName').value.trim();
+            const phone = document.getElementById('channelPhone').value.trim();
+            if (!name || !phone) {
+                showToast('Name and Phone required', 'error');
+                return;
+            }
+            state.channels.push({
+                id: channelIdCounter++,
+                type: type,
+                name: name,
+                phone: phone,
+                qr: qrDataUrl || null
+            });
+            closeModal('addChannelModal');
+            renderChannelList();
+            renderProfile();
+            showToast('Channel added', 'success');
+            qrDataUrl = null;
+        }
+
+        function removeChannel(id) {
+            if (confirm('Remove this channel?')) {
+                state.channels = state.channels.filter(c => c.id !== id);
+                if (state.selectedChannel?.id === id) state.selectedChannel = null;
+                renderChannelList();
+                renderProfile();
+                showToast('Channel removed', 'info');
+            }
+        }
+
+        // ================================================================
+        //  PIN & PREVIEW
+        // ================================================================
+        function showPinAndPreview() {
+            // Validate channel and amount before showing PIN
+            if (!state.selectedChannel) {
+                showToast('Please select a disbursement channel', 'error');
+                return;
+            }
+            const raw = document.getElementById('requestCustomAmount').value.replace(/,/g, '');
+            const amount = parseInt(raw, 10);
+            if (!amount || isNaN(amount) || amount < 10000) {
+                showToast('Enter a valid amount (min 10,000)', 'error');
+                return;
+            }
+            if (state.hasActiveAdvance) {
+                showToast('You have an active advance', 'error');
+                return;
+            }
+            // Store pending data
+            pendingRequestData = {
+                amount: amount,
+                channel: state.selectedChannel,
+                fee: Math.round(amount * 0.025)
+            };
+            pinValue = '';
+            document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
+            document.getElementById('pinError').textContent = '';
+            document.getElementById('pinOverlay').classList.add('show');
+        }
+
+        function setupPin() {
+            document.querySelectorAll('.pin-key').forEach(key => {
+                key.addEventListener('click', function() {
+                    const val = this.getAttribute('data-value');
+                    if (val === 'delete') {
+                        pinValue = pinValue.slice(0, -1);
+                    } else if (val !== null && val !== 'delete') {
+                        if (pinValue.length < 4) pinValue += val;
+                    }
+                    updatePinDots();
+                    if (pinValue.length === 4) setTimeout(verifyPin, 300);
+                });
+            });
+        }
+
+        function updatePinDots() {
+            document.querySelectorAll('.pin-dot').forEach((d, i) => {
+                i < pinValue.length ? d.classList.add('filled') : d.classList.remove('filled');
+            });
+        }
+
+        function verifyPin() {
+            if (pinValue.length === 4) {
+                // In real app, check against stored PIN. Here any 4 digits are accepted.
+                document.getElementById('pinError').textContent = '';
+                closePin();
+                showPreview();
+            } else {
+                document.getElementById('pinError').textContent = 'Enter 4 digits';
+            }
+        }
+
+        function closePin() {
+            document.getElementById('pinOverlay').classList.remove('show');
+            pinValue = '';
+            updatePinDots();
+            document.getElementById('pinError').textContent = '';
+        }
+
+        function showPreview() {
+            const data = pendingRequestData;
+            if (!data) return;
+            document.getElementById('previewContent').innerHTML = `
+                <div class="review-item"><span class="label">Amount</span><span class="value">MMK ${data.amount.toLocaleString()}</div>
+                <div class="review-item"><span class="label">Channel</span><span class="value">${data.channel.type} (${data.channel.phone})</span></div>
+                <div class="review-item"><span class="label">Fee (2.5%)</span><span class="value">MMK ${data.fee.toLocaleString()}</span></div>
+                <div class="review-item"><span class="label">Total</span><span class="value">MMK ${(data.amount + data.fee).toLocaleString()}</span></div>
+                <div class="review-item"><span class="label">Period</span><span class="value">Jun 1 – Jun 30, 2026</span></div>
+                <div class="review-item" style="border-bottom:none;"><span class="label">Status</span><span class="value"><span class="badge-status pending">Pending Approval</span></span></div>
+            `;
+            document.getElementById('previewModal').classList.add('show');
+        }
+
+        function submitRequest() {
+            const data = pendingRequestData;
+            if (!data) return;
+            state.transactions.unshift({
+                id: txIdCounter++,
+                type: 'advance',
+                amount: data.amount,
+                date: new Date().toISOString(),
+                status: 'pending',
+                description: 'Salary Advance',
+                fee: data.fee,
+                channel: data.channel.type,
+                period: 'Jun 2026'
+            });
+            state.hasActiveAdvance = true;
+            state.activeAdvance = {
+                amount: data.amount,
+                start: new Date().toISOString().split('T')[0],
+                end: '2026-06-30',
+                cooldown: '2026-06-30'
+            };
+            state.notifications.unshift({
+                id: notifIdCounter++,
+                title: 'Advance Request Submitted',
+                message: 'Your advance of MMK ' + data.amount.toLocaleString() + ' has been submitted.',
+                time: new Date().toISOString(),
+                read: false,
+                icon: 'clock'
+            });
+            closeModal('previewModal');
+            pendingRequestData = null;
+            document.getElementById('successAmount').textContent = 'MMK ' + data.amount.toLocaleString();
+            document.getElementById('successOverlay').style.display = 'flex';
+            showToast('Request submitted', 'success');
+            renderDashboard();
+        }
+
+        function cancelRequest() {
+            if (confirm('Cancel this request?')) {
+                const pending = state.transactions.find(t => t.status === 'pending' && t.type === 'advance');
+                if (pending) {
+                    pending.status = 'cancelled';
+                    // Re-evaluate active advance state
+                    state.hasActiveAdvance = state.transactions.some(t => t.status === 'pending' && t.type === 'advance') ||
+                                             (state.activeAdvance && state.activeAdvance.end > new Date().toISOString().split('T')[0]);
+                    if (!state.hasActiveAdvance) state.activeAdvance = null;
+                    showToast('Request cancelled', 'info');
+                    renderRequest();   // refresh request view to enable button
+                }
+                closeSuccess();
+                renderDashboard();
+            }
+        }
+
+        function closeSuccess() {
+            document.getElementById('successOverlay').style.display = 'none';
+            goToView('dashboard');
+        }
+
+        // ================================================================
+        //  HISTORY
+        // ================================================================
+        function renderHistory(filter = 'all') {
+            const list = document.getElementById('historyList');
+            let filtered = state.transactions;
+            if (filter !== 'all') {
+                filtered = state.transactions.filter(t => {
+                    if (filter === 'advance') return t.type === 'advance';
+                    if (filter === 'repayment') return t.type === 'repayment';
+                    if (filter === 'pending') return t.status === 'pending';
+                    if (filter === 'cancelled') return t.status === 'cancelled';
+                    return true;
+                });
+            }
+            list.innerHTML = '';
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="padding:var(--sp-lg); text-align:center; color:var(--color-text-muted); font-size:var(--font-size-sm);">No transactions</div>';
+                document.getElementById('historyCount').textContent = '0 transactions';
+                return;
+            }
+            filtered.forEach(tx => {
+                const div = document.createElement('div');
+                div.className = 'tx-item';
+                const isOut = tx.type === 'repayment';
+                let iconClass = isOut ? 'out' : '';
+                if (tx.status === 'pending') iconClass = 'pending';
+                const sign = isOut ? '-' : '+';
+                let color = isOut ? 'var(--color-status-danger)' : 'var(--color-green)';
+                if (tx.status === 'pending') color = 'var(--color-status-warning)';
+                if (tx.status === 'cancelled') color = 'var(--color-text-muted)';
+                const icon = isOut ? 'fa-arrow-up' : (tx.status === 'pending' ? 'fa-clock' : (tx.status === 'cancelled' ? 'fa-times' : 'fa-arrow-down'));
+                const badge = tx.status === 'pending' ? '<span class="badge-status pending">Pending</span>' :
+                             tx.status === 'approved' ? '<span class="badge-status approved">Approved</span>' :
+                             tx.status === 'cancelled' ? '<span class="badge-status cancelled">Cancelled</span>' : '';
+                div.innerHTML = `
+                    <div class="tx-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:var(--font-size-sm); color:var(--color-text-primary);">${tx.description}</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${new Date(tx.date).toLocaleDateString()} • ${new Date(tx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div style="display:flex; gap:var(--sp-xs); margin-top:2px; flex-wrap:wrap;">${badge}<span style="font-size:var(--font-size-tiny); color:var(--color-text-muted);">${tx.channel || 'N/A'}</span></div>
+                    </div>
+                    <div style="font-weight:700; color:${color}; font-size:var(--font-size-sm); text-align:right;">${sign}MMK ${(tx.amount/1000).toFixed(0)}K${tx.fee ? `<div style="font-size:var(--font-size-tiny); color:var(--color-text-muted); font-weight:400;">fee: MMK ${tx.fee.toLocaleString()}</div>` : ''}</div>
+                `;
+                div.onclick = () => showTransactionDetail(tx.id);
+                list.appendChild(div);
+            });
+            document.getElementById('historyCount').textContent = 'Showing ' + filtered.length + ' transactions';
+        }
+
+        function filterHistory(el) {
+            document.querySelectorAll('#history .chip').forEach(c => c.classList.remove('active-chip'));
+            el.classList.add('active-chip');
+            const filter = el.getAttribute('data-filter') || 'all';
+            renderHistory(filter);
+        }
+
+        // ================================================================
+        //  TRANSACTION DETAIL
+        // ================================================================
+        function showTransactionDetail(id) {
+            const tx = state.transactions.find(t => t.id === id);
+            if (!tx) {
+                showToast('Transaction not found', 'error');
+                return;
+            }
+            const content = document.getElementById('txDetailContent');
+            const labels = { approved: 'Approved', pending: 'Pending Approval', cancelled: 'Cancelled' };
+            const colors = { approved: 'var(--color-status-success)', pending: 'var(--color-status-warning)', cancelled: 'var(--color-text-muted)' };
+            const iconMap = { advance: 'fa-hand-holding-usd', repayment: 'fa-arrow-up' };
+            const icon = iconMap[tx.type] || 'fa-receipt';
+            const isOut = tx.type === 'repayment';
+            const sign = isOut ? '-' : '+';
+            let color = isOut ? 'var(--color-status-danger)' : 'var(--color-green)';
+            if (tx.status === 'pending') color = 'var(--color-status-warning)';
+            if (tx.status === 'cancelled') color = 'var(--color-text-muted)';
+            content.innerHTML = `
+                <div style="text-align:center; padding:var(--sp-md) 0;">
+                    <div style="width:64px; height:64px; border-radius:50%; background:${color}20; display:flex; align-items:center; justify-content:center; margin:0 auto;">
+                        <i class="fas ${icon}" style="font-size:28px; color:${color};"></i>
+                    </div>
+                    <div style="font-size:28px; font-weight:700; color:${color}; margin-top:var(--sp-sm);">${sign}MMK ${tx.amount.toLocaleString()}</div>
+                    <div style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">${tx.description}</div>
+                    <div style="margin-top:var(--sp-sm);"><span class="badge-status ${tx.status}">${labels[tx.status] || tx.status}</span></div>
+                </div>
+                <div class="card" style="border-color:var(--color-border); border-radius:var(--radius-md);">
+                    <div class="review-item"><span class="label">Date</span><span class="value">${new Date(tx.date).toLocaleString()}</span></div>
+                    <div class="review-item"><span class="label">Channel</span><span class="value">${tx.channel || 'N/A'}</span></div>
+                    <div class="review-item"><span class="label">Fee</span><span class="value">MMK ${(tx.fee || 0).toLocaleString()}</span></div>
+                    <div class="review-item"><span class="label">Period</span><span class="value">${tx.period || 'N/A'}</span></div>
+                    <div class="review-item" style="border-bottom:none;"><span class="label">Reference</span><span class="value" style="font-size:var(--font-size-xs);">#EWA-${String(tx.id).padStart(6, '0')}</span></div>
+                </div>
+                ${tx.status === 'pending' ? `<button class="btn-danger-outline" onclick="cancelTransaction(${tx.id})" style="margin-top:var(--sp-sm);"><i class="fas fa-times"></i> Cancel Request</button>` : ''}
+            `;
+            goToView('transactionDetail');
+        }
+
+        function cancelTransaction(id) {
+            if (confirm('Cancel this transaction?')) {
+                const tx = state.transactions.find(t => t.id === id);
+                if (tx) {
+                    tx.status = 'cancelled';
+                    // update active advance flag
+                    const anyPendingAdvance = state.transactions.some(t => t.status === 'pending' && t.type === 'advance');
+                    if (!anyPendingAdvance && !(state.activeAdvance && state.activeAdvance.end > new Date().toISOString().split('T')[0])) {
+                        state.hasActiveAdvance = false;
+                    }
+                    showToast('Transaction cancelled', 'info');
+                    goToView('history');
+                    renderHistory('all');
+                    renderRequest(); // update request button state
+                    renderDashboard();
+                }
+            }
+        }
+
+        // ================================================================
+        //  PROFILE
+        // ================================================================
+        function renderProfile() {
+            const u = state.user;
+            document.getElementById('profileAvatar').textContent = u.name.split(' ').map(n => n[0]).join('');
+            document.getElementById('profileName').textContent = u.name;
+            document.getElementById('profilePosition').textContent = u.position;
+            document.getElementById('profileVerifyStatus').textContent = (u.kycVerified && u.employmentVerified) ? 'Verified' : 'Pending';
+            document.getElementById('profilePhone').textContent = u.phone;
+            document.getElementById('profileEmail').textContent = u.email;
+            document.getElementById('profileEmployeeId').textContent = u.employeeId;
+            document.getElementById('profileNrc').textContent = u.nrc;
+            const company = state.companies.find(c => c.id === state.selectedCompanyId);
+            document.getElementById('profileCompany').textContent = company ? company.name : 'N/A';
+            document.getElementById('profileDept').textContent = u.department;
+            document.getElementById('profileLocation').textContent = u.officeLocation;
+            document.getElementById('profileSalary').textContent = 'MMK ' + u.salary.toLocaleString();
+            document.getElementById('profileLimit').textContent = 'MMK ' + u.limit.toLocaleString();
+            document.getElementById('profileBalance').textContent = 'MMK ' + u.balance.toLocaleString();
+
+            const list = document.getElementById('profileChannelList');
+            list.innerHTML = '';
+            if (state.channels.length === 0) {
+                list.innerHTML = '<div style="padding:var(--sp-sm); text-align:center; color:var(--color-text-muted); font-size:var(--font-size-xs);">No channels</div>';
+                return;
+            }
+            state.channels.forEach(ch => {
+                const div = document.createElement('div');
+                div.className = 'channel-card';
+                const icons = { KBZPay: 'fa-wallet', MoMoney: 'fa-mobile-screen', Wave: 'fa-wave-square', UAB: 'fa-university' };
+                const icon = icons[ch.type] || 'fa-wallet';
+                const qrHtml = ch.qr ? `<img src="${ch.qr}" style="width:28px; height:28px; border-radius:var(--radius-sm); object-fit:cover; margin-left:var(--sp-sm);" />` : '';
+                div.innerHTML = `
+                    <div class="channel-icon"><i class="fas ${icon}"></i></div>
+                    <div class="channel-info"><div class="name">${ch.type}</div><div class="detail">${ch.name} • ${ch.phone}</div></div>
+                    ${qrHtml}
+                    <button class="channel-remove" onclick="removeChannel(${ch.id})"><i class="fas fa-trash"></i></button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // ================================================================
+        //  NOTIFICATIONS
+        // ================================================================
+        function renderNotifications() {
+            const list = document.getElementById('notificationList');
+            list.innerHTML = '';
+            if (state.notifications.length === 0) {
+                list.innerHTML = '<div style="padding:var(--sp-lg); text-align:center; color:var(--color-text-muted); font-size:var(--font-size-sm);">No notifications</div>';
+                return;
+            }
+            state.notifications.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'notif-item';
+                div.style.opacity = n.read ? '0.6' : '1';
+                const iconMap = { 'check-circle': 'fa-check-circle', 'clock': 'fa-clock', 'shield-alt': 'fa-shield-alt' };
+                const ic = iconMap[n.icon] || 'fa-bell';
+                div.innerHTML = `
+                    <div class="notif-icon"><i class="fas ${ic}"></i></div>
+                    <div style="flex:1;"><div style="font-weight:600; font-size:var(--font-size-sm); color:var(--color-text-primary);">${n.title}</div><div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">${n.message}</div><div class="notif-time">${new Date(n.time).toLocaleString()}</div></div>
+                    ${!n.read ? '<span class="notif-dot"></span>' : ''}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function markAllRead() {
+            state.notifications.forEach(n => n.read = true);
+            renderNotifications();
+            showToast('All marked as read', 'success');
+        }
+
+        // ================================================================
+        //  LOGOUT
+        // ================================================================
+        function handleLogout() {
+            if (confirm('Sign out?')) {
+                showToast('Signed out', 'info');
+                goToView('splash');
+            }
+        }
+
+        // ================================================================
+        //  DEMO
+        // ================================================================
+        function runDemo() {
+            showToast('Running demo…', 'info');
+            document.getElementById('phoneInput').value = '09 777 888 999';
+            setTimeout(() => {
+                handleLogin();
+                setTimeout(() => {
+                    const boxes = document.querySelectorAll('.otp-box');
+                    boxes.forEach((b, i) => { b.value = '123456'[i] || ''; });
+                    handleOtpVerify();
+                }, 500);
+            }, 300);
+            setTimeout(() => {
+                demoKyc();
+                setTimeout(() => handleKycSubmit(), 400);
+            }, 1300);
+            setTimeout(() => {
+                demoEmployment();
+                setTimeout(() => handleEmploymentSubmit(), 400);
+            }, 2200);
+            setTimeout(() => {
+                goToView('dashboard');
+                showToast('Demo complete', 'success');
+            }, 3600);
+        }
+
+        // ================================================================
+        //  MODAL HELPERS
+        // ================================================================
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('show');
+            });
+        });
+
+        // ================================================================
+        //  INIT
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupOtp();
+            setupPin();
+            if (state.channels.length > 0) state.selectedChannel = state.channels[0];
+            renderCompanyList();
+            updateEmploymentView();
+            renderDashboard();
+            renderRequest();
+            renderHistory('all');
+            renderProfile();
+            renderNotifications();
+            goToView('splash');
+        });
+    </script>
+</body>
+</html>
